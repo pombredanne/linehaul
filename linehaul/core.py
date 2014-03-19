@@ -36,6 +36,7 @@ class FastlySyslogProtocol(LineOnlyReceiver):
         self._finished = finished
 
     def connectionLost(self, reason):
+        self._models.save()
         self._finished.callback(None)
 
     def lineReceived(self, line):

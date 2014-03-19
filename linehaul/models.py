@@ -11,30 +11,60 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import StringIO
+import uuid
+import datetime
+
 from linehaul.tables import downloads
+
+
+def fmt(n):
+    if n is None:
+        return "\N"
+    elif isinstance(n, datetime.datetime):
+        return n.strftime("%Y-%m-%d %H:%M:%S z")
+    else:
+        return n
 
 
 class DownloadStatisticsModels(object):
     def __init__(self, engine):
         self._engine = engine
+        self._data = []
+
+    def save(self):
+        print("Saving!")
+
+        with open("data.txt", "w") as fp:
+            fp.write("\n".join(
+                "\t".join(fmt(y) for y in x) for x in self._data
+            ))
+
+        with self._engine.connect() as conn:
+            conn.execute("COPY downloads FROM '%s'" % os.path.join(os.path.abspath("."), "data.txt"))
+            conn.execute("COMMIT")
+
 
     def create_download(self, package_name, package_version, distribution_type,
                         python_type, python_release, python_version,
                         installer_type, installer_version, operating_system,
                         operating_system_version, download_time,
                         raw_user_agent):
+            if installer_type == "ensetuptools":
+                installer_type = "setuptools"
 
-        return self._engine.execute(downloads.insert().values(
-            package_name=package_name,
-            package_version=package_version,
-            distribution_type=distribution_type,
-            python_type=python_type,
-            python_release=python_release,
-            python_version=python_version,
-            installer_type=installer_type,
-            installer_version=installer_version,
-            operating_system=operating_system,
-            operating_system_version=operating_system_version,
-            download_time=download_time,
-            raw_user_agent=raw_user_agent,
-        ))
+            self._data.append([
+                str(uuid.uuid4()),
+                package_name,
+                package_version,
+                distribution_type,
+                python_type,
+                python_release,
+                python_version,
+                installer_type,
+                installer_version,
+                operating_system,
+                operating_system_version,
+                download_time,
+                "",
+            ])

@@ -35,8 +35,8 @@ def _process_logs(reactor, config):
 
     download_statistic_engine = sqlalchemy.create_engine(
         config["database"],
-        strategy=alchimia.TWISTED_STRATEGY,
-        reactor=reactor
+        #strategy=alchimia.TWISTED_STRATEGY,
+        #reactor=reactor
     )
     endpoint = StandardIOEndpoint(reactor)
     endpoint.listen(
