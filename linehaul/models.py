@@ -14,6 +14,7 @@
 import StringIO
 import uuid
 import datetime
+import os
 
 from linehaul.tables import downloads
 
