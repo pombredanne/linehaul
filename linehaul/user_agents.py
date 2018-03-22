@@ -67,6 +67,7 @@ class UserAgent(pyrsistent.PRecord):
     system = pyrsistent.field(type=System, factory=System.create)
     cpu = pyrsistent.field(type=str)
     openssl_version = pyrsistent.field(type=str)
+    setuptools_version = pyrsistent.field(type=str)
 
 
 class Parser:
@@ -84,7 +85,10 @@ class Parser:
         if version not in SpecifierSet(">=6", prereleases=True):
             return
 
-        return json.loads(user_agent.split(maxsplit=1)[1])
+        try:
+            return json.loads(user_agent.split(maxsplit=1)[1])
+        except json.JSONDecodeError:
+            return
 
     @staticmethod
     def pip_1_4_format(user_agent):
@@ -99,7 +103,7 @@ class Parser:
         if version not in SpecifierSet(">=1.4,<6", prereleases=True):
             return
 
-        _, impl, system = user_agent.split()
+        _, impl, system = user_agent.split(maxsplit=2)
 
         data = {
             "installer": {
